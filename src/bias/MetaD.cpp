@@ -1841,7 +1841,7 @@ void MetaD::computeReweightingFactor()
 
   // Recover the minimum values for the grid
   unsigned ncv=getNumberOfArguments();
-  unsigned ntotgrid=1;
+  Grid::index_t ntotgrid=1;
   std::vector<double> dmin( ncv ),dmax( ncv ), grid_spacing( ncv ), vals( ncv );
   for(unsigned j=0; j<ncv; ++j) {
     Tools::convert( BiasGrid_->getMin()[j], dmin[j] );
@@ -1855,8 +1855,8 @@ void MetaD::computeReweightingFactor()
   reweight_factor=0.0; double* der=new double[ncv]; std::vector<unsigned> t_index( ncv );
   double sum1=0.0; double sum2=0.0;
   double afactor = biasf_ / (kbt_*(biasf_-1.0)); double afactor2 = 1.0 / (kbt_*(biasf_-1.0));
-  unsigned rank=comm.Get_rank(), stride=comm.Get_size();
-  for(unsigned i=rank; i<ntotgrid; i+=stride) {
+  Grid::index_t rank=comm.Get_rank(), stride=comm.Get_size();
+  for(Grid::index_t i=rank; i<ntotgrid; i+=stride) {
     t_index[0]=(i%rewf_grid_[0]);
     unsigned kk=i;
     for(unsigned j=1; j<ncv-1; ++j) { kk=(kk-t_index[j-1])/rewf_grid_[i-1]; t_index[j]=(kk%rewf_grid_[i]); }
