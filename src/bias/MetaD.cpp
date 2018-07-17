@@ -431,7 +431,6 @@ private:
   unsigned mpi_mw_;
   bool acceleration;
   double acc;
-  double acc_restart_mean_;
   bool calc_max_bias_;
   double max_bias_;
   bool calc_transition_bias_;
@@ -569,7 +568,7 @@ MetaD::MetaD(const ActionOptions& ao):
 // Multiple walkers initialization
   mw_n_(1), mw_dir_(""), mw_id_(0), mw_rstride_(1),
   walkers_mpi(false), mpi_nw_(0), mpi_mw_(0),
-  acceleration(false), acc(0.0), acc_restart_mean_(0.0),
+  acceleration(false), acc(1.0),
   calc_max_bias_(false), max_bias_(0.0),
   calc_transition_bias_(false), transition_bias_(0.0),
 // Interval initialization
@@ -970,15 +969,12 @@ MetaD::MetaD(const ActionOptions& ao):
     }
     log.printf("  calculation on the fly of the acceleration factor\n");
     addComponent("acc"); componentIsNotPeriodic("acc");
-    // Set the initial value of the the acceleration.
-    // If this is not a restart, set to 1.0.
-    if (acc_rfilename.length() == 0) {
-      getPntrToComponent("acc")->set(1.0);
-      if(getRestart()) {
-        log.printf("  WARNING: calculating the acceleration factor in a restarted run without reading in the previous value will most likely lead to incorrect results. You should use the ACCELERATION_RFILE keyword.\n");
-      }
-      // Otherwise, read and set the restart value.
-    } else {
+    
+    if (acc_rfilename.length() == 0 && getRestart()) {
+      log.printf("  WARNING: calculating the acceleration factor in a restarted run without reading in the previous value will most likely lead to incorrect results. You should use the ACCELERATION_RFILE keyword.\n");
+    }
+    
+    if(acc_rfilename.length() > 0) {
       // Restart of acceleration does not make sense if the restart timestep is zero.
       //if (getStep() == 0) {
       //  error("Restarting calculation of acceleration factors works only if simulation timestep is restarted correctly");
@@ -1000,11 +996,10 @@ MetaD::MetaD(const ActionOptions& ao):
         acc_rfile.scanField(acclabel, acc_rmean);
         acc_rfile.scanField();
       }
-      acc_restart_mean_ = acc_rmean;
-      // Set component based on the read values.
-      getPntrToComponent("acc")->set(acc_rmean);
+      acc = acc_rmean;
       log.printf("  initial acceleration factor read from file %s: value of %f at time %f\n",acc_rfilename.c_str(),acc_rmean,acc_rtime);
     }
+    getPntrToComponent("acc")->set(acc);
   }
   if (calc_max_bias_) {
     if (!grid_) error("Calculating the maximum bias on the fly works only with a grid");
@@ -1675,15 +1670,9 @@ void MetaD::calculate()
   if( rewf_grid_.size()>0 ) getPntrToComponent("rbias")->set(ene - reweight_factor);
   // calculate the acceleration factor
   if(acceleration&&!isFirstStep) {
-    acc += static_cast<double>(getStride()) * exp(ene/(kbt_));
-    const double mean_acc = acc/((double) getStep());
-    getPntrToComponent("acc")->set(mean_acc);
-  } else if (acceleration && isFirstStep && acc_restart_mean_ > 0.0) {
-    acc = acc_restart_mean_ * static_cast<double>(getStep());
-    if(freq_adaptive_) {
-      // has to be done here if restarting, as the acc is not defined before
-      updateFrequencyAdaptiveStride();
-    }
+    const double exp_bias = static_cast<double>(getStride()) * exp(ene/(kbt_));
+    acc += (exp_bias - acc)/(static_cast<double>(getStep()));
+    getPntrToComponent("acc")->set(acc);
   }
 
   getPntrToComponent("work")->set(work_);
@@ -1992,9 +1981,8 @@ double MetaD::getTransitionBarrierBias() {
 void MetaD::updateFrequencyAdaptiveStride() {
   plumed_massert(freq_adaptive_,"should only be used if frequency adaptive metadynamics is enabled");
   plumed_massert(acceleration,"frequency adaptive metadynamics can only be used if the acceleration factor is calculated");
-  const double mean_acc = acc/((double) getStep());
-  int tmp_stride= stride_*floor((mean_acc/fa_min_acceleration_)+0.5);
-  if(mean_acc >= fa_min_acceleration_) {
+  int tmp_stride= stride_*floor((acc/fa_min_acceleration_)+0.5);
+  if(acc >= fa_min_acceleration_) {
     if(tmp_stride > current_stride) {current_stride = tmp_stride;}
   }
   if(fa_max_stride_!=0 && current_stride>fa_max_stride_) {
