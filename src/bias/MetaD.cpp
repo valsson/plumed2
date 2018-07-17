@@ -969,11 +969,11 @@ MetaD::MetaD(const ActionOptions& ao):
     }
     log.printf("  calculation on the fly of the acceleration factor\n");
     addComponent("acc"); componentIsNotPeriodic("acc");
-    
+
     if (acc_rfilename.length() == 0 && getRestart()) {
       log.printf("  WARNING: calculating the acceleration factor in a restarted run without reading in the previous value will most likely lead to incorrect results. You should use the ACCELERATION_RFILE keyword.\n");
     }
-    
+
     if(acc_rfilename.length() > 0) {
       // Restart of acceleration does not make sense if the restart timestep is zero.
       //if (getStep() == 0) {
