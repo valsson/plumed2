@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2012-2017 The plumed team
+   Copyright (c) 2012-2018 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -36,6 +36,10 @@ This is the Path Collective Variables implementation
 This variable computes the progress along a given set of frames that is provided
 in input ("sss" component) and the distance from them ("zzz" component).
 (see below).
+
+\warning
+The molecule used for \ref PATHMSD calculation should be whole (both atoms used in alignment and in displacement calculation).
+In case it is broken by the host MD code, please use \ref WHOLEMOLECULES to reconstruct it before \ref PATHMSD calculation.
 
 \par Examples
 

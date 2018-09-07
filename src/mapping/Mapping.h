@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2013-2017 The plumed team
+   Copyright (c) 2013-2018 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -95,8 +95,6 @@ public:
   std::string getArgumentName( unsigned& iarg );
 /// Get the value of the ith property for the current frame
   double getPropertyValue( const unsigned& current, const unsigned& iprop ) const ;
-/// Stuff to do before we do the calculation
-  void prepare();
 /// Apply the forces
   void apply();
 };

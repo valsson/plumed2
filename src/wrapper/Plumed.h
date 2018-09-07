@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2017 The plumed team
+   Copyright (c) 2011-2018 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -384,7 +384,7 @@ public:
                  but for some choice of key it can change the content
      \note Equivalent to plumed_gcmd()
   */
-  static void gcmd(const char* key,const void* val);
+  static void gcmd(const char* key,const void* val=NULL);
   /**
      Finalize global-plumed
   */
@@ -514,14 +514,23 @@ inline
 Plumed::Plumed(Plumed&& p):
   main(p.main),
   reference(p.reference)
-{}
+{
+  p.main.p=nullptr;
+  p.reference=true; // make sure the moved plumed is not finalized
+}
 
 inline
 Plumed& Plumed::operator=(Plumed&& p) {
-  main=p.main;
-  reference=p.reference;
+  if(this != &p) {
+    if(!reference) plumed_finalize(main);
+    main=p.main;
+    reference=p.reference;
+    p.main.p=nullptr;
+    p.reference=true; // make sure the moved plumed is not finalized
+  }
   return *this;
 }
+
 #endif
 
 inline

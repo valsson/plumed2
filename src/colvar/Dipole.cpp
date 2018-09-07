@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2012-2017 The plumed team
+   Copyright (c) 2012-2018 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -33,6 +33,11 @@ namespace colvar {
 //+PLUMEDOC COLVAR DIPOLE
 /*
 Calculate the dipole moment for a group of atoms.
+
+\warning
+The atoms used for \ref DIPOLE calculation should be from a whole molecule.
+In case the molecule is broken by the host MD code, please use \ref WHOLEMOLECULES to reconstruct it before \ref DIPOLE calculation.
+
 
 \par Examples
 

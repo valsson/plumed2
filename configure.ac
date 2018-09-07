@@ -299,7 +299,11 @@ AC_LANG(C++)
 
 # log the initial flags
 LD="$CXX"
-LDSHARED="$CXX"
+
+if test -z "$LDSHARED" ; then
+  LDSHARED="$CXX"
+fi
+
 AC_MSG_NOTICE([Initial CXX:         $CXX])
 AC_MSG_NOTICE([Initial CXXFLAGS:    $CXXFLAGS])
 AC_MSG_NOTICE([Initial CPPFLAGS:    $CPPFLAGS])
@@ -1011,6 +1015,18 @@ fi
 if test "$prefix" == NONE
 then
   prefix=/usr/local
+fi
+
+AC_MSG_CHECKING([If prefix is equal to present working directory])
+
+# ignore cases where the directory does not exist:
+normalized_prefix="`cd "${prefix}" 2>/dev/null && pwd || true`"
+
+if test "`pwd`" = "$normalized_prefix" ; then
+  AC_MSG_RESULT([yes])
+  AC_MSG_ERROR([prefix should not be equal to the present working directory])
+else
+  AC_MSG_RESULT([no])
 fi
 
 AC_ARG_PROGRAM

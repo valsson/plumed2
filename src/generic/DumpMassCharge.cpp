@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2015-2017 The plumed team
+   Copyright (c) 2015-2018 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -95,10 +95,12 @@ class DumpMassCharge:
 {
   string file;
   bool first;
+  bool second;
 public:
   explicit DumpMassCharge(const ActionOptions&);
   ~DumpMassCharge();
   static void registerKeywords( Keywords& keys );
+  void prepare();
   void calculate() {}
   void apply() {}
   void update();
@@ -119,7 +121,8 @@ DumpMassCharge::DumpMassCharge(const ActionOptions&ao):
   Action(ao),
   ActionAtomistic(ao),
   ActionPilot(ao),
-  first(true)
+  first(true),
+  second(true)
 {
   vector<AtomNumber> atoms;
   parse("FILE",file);
@@ -139,6 +142,13 @@ DumpMassCharge::DumpMassCharge(const ActionOptions&ao):
   for(unsigned i=0; i<atoms.size(); ++i) log.printf(" %d",atoms[i].serial() );
   log.printf("\n");
   requestAtoms(atoms);
+}
+
+void DumpMassCharge::prepare() {
+  if(!first && second) {
+    requestAtoms(vector<AtomNumber>());
+    second=false;
+  }
 }
 
 void DumpMassCharge::update() {

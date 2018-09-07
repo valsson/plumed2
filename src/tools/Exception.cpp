@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2012-2017 The plumed team
+   Copyright (c) 2012-2018 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -85,7 +85,7 @@ Exception::Exception(const std::string&msg,const std::string&file,unsigned line,
 void Exception::abortIfExceptionsAreDisabled() {
 #if ! defined(__PLUMED_HAS_EXCEPTIONS)
   fprintf(stderr,"%s","Exceptions are disabled, aborting now\n");
-  fprintf(stderr,"%s",what());
+  fprintf(stderr,"%s",Exception::what());
   fprintf(stderr,"\n");
   std::abort();
 #endif

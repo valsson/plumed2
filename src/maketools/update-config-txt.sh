@@ -72,7 +72,7 @@ modules=$(
 cd ../
 for dir in *
 do
-  if test -f $dir/module.type
+  if test -f "$dir/module.type"
   then
     mtype="$(cat "$dir/module.type")"
     is=""
@@ -101,6 +101,9 @@ echo "# version strings"
 echo "# syntax: version short/long/git number"
 echo "$version"
 echo
+echo "# command to lauch mpi processes"
+echo "# syntax: mpiexec command"
+echo "# empty string means that mpiexec was not chosen at configure time"
 echo "mpiexec $mpiexec"
 echo
 echo "# list of 'has' options"

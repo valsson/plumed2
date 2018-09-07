@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2017 The plumed team
+   Copyright (c) 2011-2018 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -127,6 +127,10 @@ all the atoms in the segment are assumed to be part of both the alignment and di
 
 Please note that there are a number of other methods for calculating the distance between the instantaneous configuration and a reference configuration
 that are available in plumed.  More information on these various methods can be found in the section of the manual on \ref dists.
+
+\warning
+The molecule used for \ref RMSD calculation should be whole (both atoms used in alignment and in displacement calculation).
+In case it is broken by the host MD code, please use \ref WHOLEMOLECULES to reconstruct it before \ref RMSD calculation.
 
 \par Examples
 

@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2017 The plumed team
+   Copyright (c) 2017,2018 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -34,6 +34,10 @@
 #include <string>
 #include <cmath>
 #include <map>
+
+#ifndef M_PI
+#define M_PI           3.14159265358979323846
+#endif
 
 using namespace std;
 

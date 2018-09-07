@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2013-2017 The plumed team
+   Copyright (c) 2013-2018 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -58,6 +58,7 @@ bool MolDataClass::allowedResidue( const std::string& type, const std::string& r
 // Terminal groups
     else if(residuename=="ACE") return true;
     else if(residuename=="NME") return true;
+    else if(residuename=="NH2") return true;
 // Alternative residue names in common force fiels
     else if(residuename=="GLH") return true; // neutral GLU
     else if(residuename=="ASH") return true; // neutral ASP
@@ -69,19 +70,35 @@ bool MolDataClass::allowedResidue( const std::string& type, const std::string& r
     else if(residuename=="HSP") return true; // HIS-P charmm
     else return false;
   } else if( type=="dna" ) {
-    if(residuename=="DA") return true;
-    else if(residuename=="DG") return true;
-    else if(residuename=="DT") return true;
-    else if(residuename=="DC") return true;
+    if(residuename=="A") return true;
+    else if(residuename=="A5") return true;
+    else if(residuename=="A3") return true;
+    else if(residuename=="AN") return true;
+    else if(residuename=="G") return true;
+    else if(residuename=="G5") return true;
+    else if(residuename=="G3") return true;
+    else if(residuename=="GN") return true;
+    else if(residuename=="T") return true;
+    else if(residuename=="T5") return true;
+    else if(residuename=="T3") return true;
+    else if(residuename=="TN") return true;
+    else if(residuename=="C") return true;
+    else if(residuename=="C5") return true;
+    else if(residuename=="C3") return true;
+    else if(residuename=="CN") return true;
+    else if(residuename=="DA") return true;
     else if(residuename=="DA5") return true;
     else if(residuename=="DA3") return true;
     else if(residuename=="DAN") return true;
+    else if(residuename=="DG") return true;
     else if(residuename=="DG5") return true;
     else if(residuename=="DG3") return true;
     else if(residuename=="DGN") return true;
+    else if(residuename=="DT") return true;
     else if(residuename=="DT5") return true;
     else if(residuename=="DT3") return true;
     else if(residuename=="DTN") return true;
+    else if(residuename=="DC") return true;
     else if(residuename=="DC5") return true;
     else if(residuename=="DC3") return true;
     else if(residuename=="DCN") return true;
@@ -138,7 +155,7 @@ void MolDataClass::getBackboneForResidue( const std::string& type, const unsigne
     } else if( residuename=="ACE") {
       atoms.resize(1);
       atoms[0]=mypdb.getNamedAtomFromResidue("C",residuenum);
-    } else if( residuename=="NME") {
+    } else if( residuename=="NME"||residuename=="NH2") {
       atoms.resize(1);
       atoms[0]=mypdb.getNamedAtomFromResidue("N",residuenum);
     } else {
@@ -167,6 +184,7 @@ bool MolDataClass::isTerminalGroup( const std::string& type, const std::string& 
   if( type=="protein" ) {
     if( residuename=="ACE" ) return true;
     else if( residuename=="NME" ) return true;
+    else if( residuename=="NH2" ) return true;
     else return false;
   } else {
     plumed_merror(type + " is not a valid molecule type");

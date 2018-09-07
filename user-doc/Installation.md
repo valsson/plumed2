@@ -341,17 +341,43 @@ or compile the manual. This is not a problem.
 
 You can also check if PLUMED is correctly compiled by performing our regression tests.
 Be warned that some of them fail because of the different numerical accuracy on different machines.
+As of version 2.4, in order to test the `plumed` executable that you just compiled
+(prior to installing it) you can use the following command
+\verbatim
+> make check
+\endverbatim
+On the other hand, in order to test the `plumed` executable that you just installed (see \ref InstallingPlumed)
+you should type
+\verbatim
+> make installcheck
+\endverbatim
+In addition, similarly to previous versions of PLUMED, you can test the `plumed` executable
+that is in your current path with
 \verbatim
 > cd regtest
 > make
 \endverbatim 
-Notice that regtests are performed using the "plumed" executable that is currenty in the path.
 You can check the exact version they will use by using the command
 \verbatim
 > which plumed
 \endverbatim
-This means that if you do not source "sourceme.sh", the tests will fails. This does not mean 
-that plumed is not working it just means that you haven't told them shell where to find plumed!
+Thus, you can easily run the test suite using a different version of PLUMED
+(maybe an earlier version that you already installed), just making sure that it can be 
+found in the path. Clearly, if you test a given
+version of PLUMED with a test suite from a different version you can expect two
+possible kinds of innocuous errors:
+- If `plumed` executable is older than the test suite, the tests might fail since they rely on
+  some feature introduced in PLUMED in a newer version.
+- If `plumed` executable is newer than the test suite, the tests might fail since some
+  non-backward compatible change was made in PLUMED. We try to keep the number
+  of non-backward compatible changes small, but as you can see in the \ref Changelog there
+  are typically a few of them at every new major release.
+
+\attention
+Even though we regularly perform tests on [Travis-CI](http://travis-ci.org/plumed/plumed2),
+it is possible that aggressive optimizations or even architecture dependent features
+trigger bugs that did not show up on travis. So please always perform regtests when you install
+PLUMED.
 
 Notice that the compiled executable, which now sits in 'src/lib/plumed', relies
 on other resource files present in the compilation directory.
@@ -406,6 +432,9 @@ If you didn't specify the `--prefix` option during configure, and you did not se
 variable when installing, PLUMED will be installed in /usr/local.
 The install command should be executed with root permissions (e.g. "sudo make install")
 if you want to install PLUMED on a system directory.
+
+\warning Please **do not** set prefix to the current directory (`./configure --prefix=$PWD`). PLUMED
+expects the installation directory to be a different one! You might want to use something like `./configure --prefix=$PWD/install` instead.
 
 Notice that upon installation PLUMED might need to relink a library.
 This was always true until version 2.1, but in version 2.2 libraries should
@@ -552,14 +581,18 @@ Notice that plumed comes with many variants that can be inspected with the comma
     > sudo port info plumed
 
 Plumed uses variants to support different compilers.
-For instance, you can install plumed with openmpi using
+For instance, you can install plumed with mpich using
 
-    > sudo port install plumed +openmpi
+    > sudo port install plumed +mpich
 
-Using gcc instead of native compilers is recommended so as to
+Using more recent clang instead of native compilers is recommended so as to
 take advantage of openMP
 
-    > sudo port install plumed +openmpi +gcc7
+    > sudo port install plumed +mpich +clang50
+
+Notice that support for c++11 with gcc compilers is someway problematic within MacPorts
+due to impossibility to use the system c++ library. For this reason, only clang compilers are supported
+(see also [this discussion](https://github.com/macports/macports-ports/pull/1252)).
 
 Variants can be also used to compile with debug flags (`+debug`), to pick a linear algebra library
 (e.g. `+openblas`) and to enable all optional modules (`+allmodules`).
@@ -576,18 +609,18 @@ under the subport `plumed-devel` that can be installed with
 
 It is also possible to install a plumed-patched version of gromacs.
 For instance, you can use the following command to install
-gromacs patched with plumed with gcc compiler and openmpi:
+gromacs patched with plumed with clang-5.0 compiler and mpich:
 
-    > sudo port install plumed +openmpi +gcc7
-    > sudo port install gromacs-plumed +openmpi +gcc7
+    > sudo port install plumed +mpich +clang50
+    > sudo port install gromacs-plumed +mpich +clang50
 
 In case you want to combine gromacs with the unstable version of plumed, use this instead:
 
-    > sudo port install plumed-devel +openmpi +gcc7
-    > sudo port install gromacs-plumed +openmpi +gcc7
+    > sudo port install plumed-devel +mpich +clang50
+    > sudo port install gromacs-plumed +mpich +clang50
 
 Notice that gromacs should be compiled using the same compiler
-variant as plumed (in this example `+openmpi +gcc7`). In case this is not
+variant as plumed (in this example `+mpich +clang50`). In case this is not
 true, compilation will fail.
 
 Also notice that gromacs is patched with plumed in runtime mode
@@ -673,6 +706,21 @@ ld: TOC section size exceeds 64k
   please configure plumed again with the following flag
 \verbatim
 ./configure --disable-ld-r
+\endverbatim
+- On Cray machines, you might have to set the following environment variable
+  before configuring and building both PLUMED and the MD code that you want
+  to patch with PLUMED (kindly reported by Marco De La Pierre):
+\verbatim
+export CRAYPE_LINK_TYPE=dynamic
+\endverbatim
+- Intel MPI seems to require the flags `-lmpi_mt -mt_mpi` for compiling and linking and the flag `-DMPICH_IGNORE_CXX_SEEK` for compiling
+  (kindly reported by Abhishek Acharya).
+  You might want to try to configure using
+\verbatim
+./configure LDFLAGS=-lmpi_mt CXXFLAGS="-DMPICH_IGNORE_CXX_SEEK -mt_mpi" STATIC_LIBS=-mt_mpi
+\endverbatim
+  Adding libraries to `STATIC_LIBS` uses them for all the linking steps, whereas those in `LIBS` are only used when linking the PLUMED kernel library.
+  See more at [this thread](https://groups.google.com/d/msgid/plumed-users/CAB1aw3y0m%3D5qwzsZY4ZB-aBevsL5iuS%3DmQuSWK_cw527zCMqzg%40mail.gmail.com?utm_medium=email&utm_source=footer).
 \endverbatim
 
 \page CodeSpecificNotes Code specific notes

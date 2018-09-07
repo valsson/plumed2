@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2014-2017 The plumed team
+   Copyright (c) 2014-2018 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -76,6 +76,11 @@ which are below it in the input script will see the corrected positions.
 As a general rule, put it at the top of the input file. Also, unless you
 know exactly what you are doing, leave the default stride (1), so that
 this action is performed at every MD step.
+
+\warning
+The molecule used for alignment should be whole.
+In case it is broken by the host MD code, please use \ref WHOLEMOLECULES to reconstruct it before \ref FIT_TO_TEMPLATE .
+
 
 \par Examples
 

@@ -25,7 +25,7 @@ matrix:
   - os: linux
     dist: trusty
     sudo: required
-    env: CPPCHECK=yes CPPCHECK_VERSION=1.81
+    env: CPPCHECK=yes CPPCHECK_VERSION=1.84
 # then check with different optimization flags
   - os: linux
     dist: trusty
@@ -112,6 +112,9 @@ install:
 # install some package - these are fast, we install them anyway
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install -y libmatheval-dev libfftw3-dev gsl-bin libgsl0-dev  libboost-serialization-dev ; fi
   - if test "$PLUMED_CXX" ; then ./.travis/install.xdrfile ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      ./.travis/install.ccache v3.4.2 ;
+    fi
 # cppcheck:
 # I use 1.71 since 1.72 seems to report a lot of false positive
   - if test "$CPPCHECK" == yes ; then  ./.travis/install.cppcheck $CPPCHECK_VERSION ; fi
@@ -152,6 +155,8 @@ install:
 script:
 # make sure all modules are enabled
   - CONFIG_FLAGS="$CONFIG_FLAGS --enable-modules=all"
+# disable tracking dependencies, to build faster
+  - CONFIG_FLAGS="$CONFIG_FLAGS --disable-dependency-tracking"
 # we enable fftw, which is off by default
   - CONFIG_FLAGS="$CONFIG_FLAGS --enable-fftw"
 # enable boost_serialization to test drr module
@@ -174,7 +179,7 @@ script:
 # build using macports
   - if test -n "$PLUMED_MACPORTS" ; then
       sudo port -N -k install $PLUMED_MACPORTS ;
-      plumed config show
+      plumed config show ;
       ./macports-ci ccache --save ;
     fi
 

@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2017 The plumed team
+   Copyright (c) 2011-2018 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -89,8 +89,10 @@ Debug::Debug(const ActionOptions&ao):
   if(novirial) log.printf("  Switching off virial contribution\n");
   if(novirial) plumed.novirial=true;
   parseFlag("DETAILED_TIMERS",detailedTimers);
-  if(detailedTimers) log.printf("  Detailed timing on\n");
-  plumed.detailedTimers=true;
+  if(detailedTimers) {
+    log.printf("  Detailed timing on\n");
+    plumed.detailedTimers=true;
+  }
   ofile.link(*this);
   std::string file;
   parse("FILE",file);

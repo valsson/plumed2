@@ -179,19 +179,19 @@ ifdef PLUMED_LIBSUFFIX
 	@echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 endif
 ifndef program_name
-	$(error "it seems Makefile.conf does not defined program_name - please configure again!")
+	$(error "it seems Makefile.conf does not define program_name - please configure again!")
 endif
 ifndef bindir
-	$(error "it seems Makefile.conf does not defined bindir - please configure again!")
+	$(error "it seems Makefile.conf does not define bindir - please configure again!")
 endif
 ifndef libdir
-	$(error "it seems Makefile.conf does not defined libdir - please configure again!")
+	$(error "it seems Makefile.conf does not define libdir - please configure again!")
 endif
 ifndef includedir
-	$(error "it seems Makefile.conf does not defined includedir - please configure again!")
+	$(error "it seems Makefile.conf does not define includedir - please configure again!")
 endif
 ifndef htmldir
-	$(error "it seems Makefile.conf does not defined htmldir - please configure again!")
+	$(error "it seems Makefile.conf does not define htmldir - please configure again!")
 endif
 	cd ../config ; $(MAKE)
 # in principle we should uninstall before install
@@ -247,9 +247,9 @@ ifeq ($(SOEXT),dylib)
 	install_name_tool -id "$(libdir)/lib$(program_name).$(SOEXT)" "$(DESTDIR)$(libdir)/lib$(program_name).$(SOEXT)"
 	install_name_tool -id "$(libdir)/lib$(program_name)Kernel.$(SOEXT)" "$(DESTDIR)$(libdir)/lib$(program_name)Kernel.$(SOEXT)"
 endif
-endif
 ifdef AR_CR
 	cp install/libplumedWrapper.a "$(DESTDIR)$(libdir)/lib$(program_name)Wrapper.a"
+endif
 endif
 # modulefile
 	cp install/modulefile "$(DESTDIR)$(libdir)/$(program_name)/modulefile"
@@ -310,18 +310,20 @@ endif
 	@if test -d ../../vim/help ; then echo "From vim, you can use :set syntax=$(program_name) to enable it" ; fi
 ifeq ($(program_can_run),no)
 	@echo "WARNING: $(program_name) executable will not run on this machine"
-	@echo "WARNING: to patch an MD code use 'plumed-patch'"
-	@echo "WARNING: to verify configuration use 'plumed-config'"
-	@echo "WARNING: a few other command line tools are avalable as $(libdir)/$(program_name)/plumed-*"
+	@echo "WARNING: This is normal if you are cross compiling."
+	@echo "WARNING: - to patch an MD code use '$(program_name)-patch'"
+	@echo "WARNING: - to verify configuration use '$(program_name)-config'"
+	@echo "WARNING: - a few other command line tools are avalable as $(libdir)/$(program_name)/plumed-*"
 else ifeq ($(program_can_run_mpi),no)
 	@echo "WARNING: $(program_name) executable will not run on this machine"
 	@echo "WARNING: unless you invoke it as '$(program_name) --no-mpi'"
-	@echo "WARNING: to patch an MD code now use '$(program_name) --no-mpi patch'"
-	@echo "WARNING: (notice that MPI will be available anyway in the patched code)"
-	@echo "WARNING: all command line tools are available as '$(program_name) --no-mpi name-of-the-tool'"
-	@echo "WARNING: e.g. '$(program_name) --no-mpi driver'"
+	@echo "WARNING: This is normal if this is the login node of a cluster."
+	@echo "WARNING: - to patch an MD code now use '$(program_name) --no-mpi patch'"
+	@echo "WARNING:   (notice that MPI will be available anyway in the patched code)"
+	@echo "WARNING: - all command line tools are available as '$(program_name) --no-mpi name-of-the-tool'"
+	@echo "WARNING:   e.g. '$(program_name) --no-mpi driver'"
+	@echo "WARNING:   (MPI will be disabled in this case)"
 endif
-
 
 uninstall:
 	@echo WARNING
@@ -344,7 +346,7 @@ uninstall:
 	rm -f "$(DESTDIR)$(bindir)/bin/$(program_name)-config"
 	rm -f "$(DESTDIR)$(libdir)/lib$(program_name).$(SOEXT)"
 	rm -f "$(DESTDIR)$(libdir)/lib$(program_name)Kernel.$(SOEXT)"
-	rm -f "$(DESTDIR)$(libdir)/lib/pkgconfig/$(PLUMED_PROGRAM_NAME).pc"
+	rm -f "$(DESTDIR)$(libdir)/lib/pkgconfig/$(program_name).pc"
 
 $(DIRS):
 	$(MAKE) -C $@ obj
@@ -518,8 +520,7 @@ endif
 .PHONY: clean dirslinks
 clean:
 	rm -f $(CLEANLIST)
-	rm -f $(PLUMED_MAIN_STATIC) $(PLUMED_MAIN_SHARED) $(PLUMED_MAIN_RUNTIME)
-	rm -f Plumed.inc* plumed-* Plumed.cmake*
+	rm -f plumed Plumed.inc* plumed-* Plumed.cmake*
 # this is not necessary, I leave it here to remove spurious plumed.vim files generated with
 # the first version of plumed.vim syntax file:
 	rm -f plumed.vim
