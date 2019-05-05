@@ -45,6 +45,7 @@ class Mapping :
 {
   friend class PropertyMap;
   friend class TrigonometricPathVessel;
+  friend class TrigonometricPathVessel_Alternative;
   friend class AdaptivePath;
 private:
 //  The derivative wrt to the distance from the frame
