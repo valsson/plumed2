@@ -33,9 +33,9 @@ void TrigonometricPathVessel_Alternative::registerKeywords( Keywords& keys ) {
 }
 
 void TrigonometricPathVessel_Alternative::reserveKeyword( Keywords& keys ) {
-  keys.reserve("vessel","GPATH","calculate the position on the path using trigonometry");
-  keys.addOutputComponent("gspath","GPATH","the position on the path calculated using trigonometry");
-  keys.addOutputComponent("gzpath","GPATH","the distance from the path calculated using trigonometry");
+  keys.reserve("vessel","GPATH_ALT","calculate the position on the path using trigonometry");
+  keys.addOutputComponent("gaspath","GPATH_ALT","the position on the path calculated using trigonometry");
+  keys.addOutputComponent("gazpath","GPATH_ALT","the distance from the path calculated using trigonometry");
 }
 
 TrigonometricPathVessel_Alternative::TrigonometricPathVessel_Alternative( const vesselbase::VesselOptions& da ):

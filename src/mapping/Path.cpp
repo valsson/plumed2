@@ -157,7 +157,7 @@ PLUMED_REGISTER_ACTION(Path,"PATH")
 void Path::registerKeywords( Keywords& keys ) {
   PathBase::registerKeywords( keys ); keys.remove("PROPERTY");
   keys.addFlag("NOSPATH",false,"do not calculate the spath position");
-  keys.remove("LOWMEM"); keys.use("GPATH");
+  keys.remove("LOWMEM"); keys.use("GPATH"); keys.use("GPATH_ALT");
 }
 
 Path::Path(const ActionOptions& ao):
