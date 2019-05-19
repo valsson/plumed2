@@ -39,12 +39,14 @@ private:
   Mapping* mymap;
   double dx;
   std::vector<double> cargs;
-  unsigned iclose1, iclose2;
+  unsigned iclose1, iclose2, iclose3;
+  unsigned iclose1_prev;
   Direction projdir;
   std::vector<double> mypack1_stashd_args;
   std::vector<Vector> mypack1_stashd_atoms;
   MultiValue mydpack1, mydpack2, mydpack3;
   ReferenceValuePack mypack1, mypack2, mypack3;
+  bool first_time;
 public:
   static void registerKeywords( Keywords& keys );
   static void reserveKeyword( Keywords& keys );

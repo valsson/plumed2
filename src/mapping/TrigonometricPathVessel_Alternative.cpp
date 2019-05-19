@@ -46,7 +46,8 @@ TrigonometricPathVessel_Alternative::TrigonometricPathVessel_Alternative( const 
   mydpack3( 1, getAction()->getNumberOfDerivatives() ),
   mypack1( 0, 0, mydpack1 ),
   mypack2( 0, 0, mydpack2 ),
-  mypack3( 0, 0, mydpack3 )
+  mypack3( 0, 0, mydpack3 ),
+  first_time(true)
 {
   mymap=dynamic_cast<Mapping*>( getAction() );
   plumed_massert( mymap, "Trigonometric path vessel can only be used with mappings");
@@ -95,9 +96,7 @@ void TrigonometricPathVessel_Alternative::resize() {
 }
 
 void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buffer ) {
-  static int iclose1_prev, first_time_here = 1;
   double mindist1, mindist2, mindist3;
-  unsigned iclose1, iclose2, iclose3;
   // Store the data calculated during mpi loop
   StoreDataVessel::finish( buffer );
   // Get current value of all arguments
@@ -106,7 +105,7 @@ void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buf
   double lambda=mymap->getLambda();
   std::vector<double> dist1( getNumberOfComponents() ), dist2( getNumberOfComponents() ), dist3( getNumberOfComponents() );
 
-  if( first_time_here ) { // check all nodes, find closest
+  if( first_time ) { // check all nodes, find closest
     retrieveSequentialValue( 0, false, dist1 ); mindist1 = dist1[0];
     if( lambda>0.0 ) mindist1=-std::log( mindist1 )  / lambda;
     iclose1=getStoreIndex(0);
@@ -118,7 +117,7 @@ void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buf
         iclose1  = getStoreIndex(i);
       }
     }
-    first_time_here = 0;
+    first_time = false;
   }
   else { // remember closest node from previous step
     iclose1 = iclose1_prev;
