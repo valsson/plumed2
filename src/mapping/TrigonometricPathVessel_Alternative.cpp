@@ -133,14 +133,14 @@ void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buf
     retrieveSequentialValue( iclose1, false, dist1 ); mindist1 = dist1[0];
     retrieveSequentialValue( iclose2, false, dist2 ); mindist2 = dist2[0];
     retrieveSequentialValue( iclose3, false, dist3 ); mindist3 = dist3[0];
-    if( lambda>0.0 ) { 
+    if( lambda>0.0 ) {
       mindist1 = -std::log( mindist1 ) / lambda;
       mindist2 = -std::log( mindist2 ) / lambda;
       mindist3 = -std::log( mindist3 ) / lambda;
     }
     //fprintf( stderr, "***1***  iclose1 = %3d  d1 = %15.10g  iclose2 = %3d  d2 = %15.10g  iclose3 = %3d  d3 = %15.10g\n", iclose1, mindist1, iclose2, mindist2, iclose3, mindist3 );
     if( mindist1 < mindist2 ) {
-      if( mindist1 < mindist3 ) { // got the correct triplet of nodes to compute gspath/gzpath 
+      if( mindist1 < mindist3 ) { // got the correct triplet of nodes to compute gspath/gzpath
         if( mindist2 > mindist3 ) {
           iclose2 = iclose1 +1;
           iclose3 = iclose1 -1;
