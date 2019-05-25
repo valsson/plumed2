@@ -124,7 +124,7 @@ void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buf
         iclose1  = getStoreIndex(i);
       }
     }
-    first_time = false;
+    iclose1_prev = iclose1;
   }
   else { // remember closest node from previous step
     iclose1 = iclose1_prev;
@@ -137,6 +137,12 @@ void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buf
   for( ;; ) { // iterate until closest node is in the middle of three consecuitve nodes
     iclose2 = iclose1 -1;
     iclose3 = iclose1 +1;
+    if(task_prepare_thold>0 && !first_time && abs(int(iclose1)-int(iclose1_prev))>task_prepare_thold-1 ) {
+      std::string ic1_str; Tools::convert(iclose1,ic1_str);
+      std::string ic1_prev_str; Tools::convert(iclose1_prev,ic1_prev_str);
+      std::string error_str = "Outside of distance calcuation threshold [iclose1_prev="+ic1_prev_str+"-> iclose1="+ic1_str+"]. Use a larger CALC_THRESHOLD value\n";
+      plumed_merror(error_str);
+    }
     retrieveValueWithIndex( iclose1, false, dist1 ); mindist1 = dist1[0];
     retrieveValueWithIndex( iclose2, false, dist2 ); mindist2 = dist2[0];
     retrieveValueWithIndex( iclose3, false, dist3 ); mindist3 = dist3[0];
@@ -171,6 +177,7 @@ void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buf
   }
 
   iclose1_prev = iclose1;
+  first_time = false;
 
   // We now have to compute vectors connecting the three closest points to the
   // new point
