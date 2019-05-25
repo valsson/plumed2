@@ -17,7 +17,10 @@ DUMPDERIVATIVES ARG=p2.* STRIDE=1 FILE=deriv FMT=%8.4f
 p2_alt: PATH REFERENCE=all.pdb GPATH_ALT NOSPATH NOZPATH  
 DUMPDERIVATIVES ARG=p2_alt.* STRIDE=1 FILE=deriv_alt FMT=%8.4f
 
+p2_alt_th: PATH REFERENCE=all.pdb GPATH_ALT NOSPATH NOZPATH  CALC_THRESHOLD=5
+DUMPDERIVATIVES ARG=p2_alt_th.* STRIDE=1 FILE=deriv_alt_th FMT=%8.4f
+
 # Print values of CVS
 PRINT ARG=pp.*,p2.* FILE=colvar FMT=%8.4f 
-PRINT ARG=p2_alt.* FILE=colvar_alt FMT=%8.4f 
+PRINT ARG=p2_alt.*,p2_alt_th.* FILE=colvar_alt    FMT=%8.4f 
 

@@ -34,6 +34,7 @@ void TrigonometricPathVessel_Alternative::registerKeywords( Keywords& keys ) {
 
 void TrigonometricPathVessel_Alternative::reserveKeyword( Keywords& keys ) {
   keys.reserve("vessel","GPATH_ALT","calculate the position on the path using trigonometry");
+  keys.add("optional","CALC_THRESHOLD","use a threshold on the calcuations of the distances");
   keys.addOutputComponent("gaspath","GPATH_ALT","the position on the path calculated using trigonometry");
   keys.addOutputComponent("gazpath","GPATH_ALT","the distance from the path calculated using trigonometry");
 }
@@ -47,7 +48,8 @@ TrigonometricPathVessel_Alternative::TrigonometricPathVessel_Alternative( const 
   mypack1( 0, 0, mydpack1 ),
   mypack2( 0, 0, mydpack2 ),
   mypack3( 0, 0, mydpack3 ),
-  first_time(true)
+  first_time(true),
+  task_prepare_thold(0)
 {
   mymap=dynamic_cast<Mapping*>( getAction() );
   plumed_massert( mymap, "Trigonometric path vessel can only be used with mappings");
@@ -61,6 +63,11 @@ TrigonometricPathVessel_Alternative::TrigonometricPathVessel_Alternative( const 
   sp=mymap->copyOutput( mymap->getNumberOfComponents()-1 ); sp->resizeDerivatives( mymap->getNumberOfDerivatives() );
   mymap->addComponentWithDerivatives("gzpath"); mymap->componentIsNotPeriodic("gzpath");
   zp=mymap->copyOutput( mymap->getNumberOfComponents()-1 ); zp->resizeDerivatives( mymap->getNumberOfDerivatives() );
+
+  mymap->parse("CALC_THRESHOLD",task_prepare_thold);
+  if(task_prepare_thold>0) {
+    mymap->log.printf("  using a threshold on the calcuations of the distances, only distances within %d of the previous node are calculated\n",task_prepare_thold);
+  }
 
   // Check we have PCA
   ReferenceConfiguration* ref0=mymap->getReferenceConfiguration(0);
@@ -106,11 +113,11 @@ void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buf
   std::vector<double> dist1( getNumberOfComponents() ), dist2( getNumberOfComponents() ), dist3( getNumberOfComponents() );
 
   if( first_time ) { // check all nodes, find closest
-    retrieveSequentialValue( 0, false, dist1 ); mindist1 = dist1[0];
+    retrieveValueWithIndex( 0, false, dist1 ); mindist1 = dist1[0];
     if( lambda>0.0 ) mindist1=-std::log( mindist1 )  / lambda;
     iclose1=getStoreIndex(0);
-    for(unsigned i=1; i<getNumberOfStoredValues(); ++i) {
-      retrieveSequentialValue( i, false, dist2 ); mindist2 = dist2[0];
+    for(unsigned i=1; i<mymap->getFullNumberOfTasks(); ++i) {
+      retrieveValueWithIndex( i, false, dist2 ); mindist2 = dist2[0];
       if( lambda>0.0 ) { mindist2 = -std::log( mindist2 ) / lambda; }
       if( mindist2 < mindist1 ) {
         mindist1 = mindist2;
@@ -123,16 +130,16 @@ void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buf
     iclose1 = iclose1_prev;
   }
 
-  if( iclose1 == 0 || iclose1 == (getNumberOfStoredValues() -1) ) { // geometric path formula breaks down at end points - exception thrown
+  if( iclose1 == 0 || iclose1 == (mymap->getFullNumberOfTasks() -1) ) { // geometric path formula breaks down at end points - exception thrown
     plumed_error()<<"simulation too close to end of path, geometric formula breaks down - use tighter upper/lower walls on gspath\n";
   }
 
   for( ;; ) { // iterate until closest node is in the middle of three consecuitve nodes
     iclose2 = iclose1 -1;
     iclose3 = iclose1 +1;
-    retrieveSequentialValue( iclose1, false, dist1 ); mindist1 = dist1[0];
-    retrieveSequentialValue( iclose2, false, dist2 ); mindist2 = dist2[0];
-    retrieveSequentialValue( iclose3, false, dist3 ); mindist3 = dist3[0];
+    retrieveValueWithIndex( iclose1, false, dist1 ); mindist1 = dist1[0];
+    retrieveValueWithIndex( iclose2, false, dist2 ); mindist2 = dist2[0];
+    retrieveValueWithIndex( iclose3, false, dist3 ); mindist3 = dist3[0];
     if( lambda>0.0 ) {
       mindist1 = -std::log( mindist1 ) / lambda;
       mindist2 = -std::log( mindist2 ) / lambda;
@@ -157,11 +164,12 @@ void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buf
       else                       { iclose1 = iclose3; }
       //fprintf( stderr, "***4***  iclose1 = %3d  iclose2 = %3d  iclose3 = %3d\n", iclose1, iclose2, iclose3 );
     }
-    if( iclose1 == 0 || iclose1 == (getNumberOfStoredValues() -1) ) { // geometric path formula breaks down at end points - exception thrown
+    if( iclose1 == 0 || iclose1 == (mymap->getFullNumberOfTasks()-1) ) { // geometric path formula breaks down at end points - exception thrown
       plumed_error()<<"simulation too close to end of path, geometric formula breaks down - use tighter upper/lower walls on gspath\n";
     }
     //fprintf( stderr, "***5***  iclose1 = %3d  iclose2 = %3d  iclose3 = %3d\n", iclose1, iclose2, iclose3 );
   }
+
   iclose1_prev = iclose1;
 
   // We now have to compute vectors connecting the three closest points to the
@@ -250,6 +258,25 @@ bool TrigonometricPathVessel_Alternative::applyForce( std::vector<double>& force
   }
   return wasforced;
 }
+
+void TrigonometricPathVessel_Alternative::prepare() {
+  if(task_prepare_thold>0 && !first_time) {
+    // as this will be run before ::finish above
+    mymap->deactivateAllTasks();
+    mymap->taskFlags[iclose1_prev] = 1;
+    // fprintf( stderr, "iclose1_prev = %3d\n",iclose1_prev);
+    for(unsigned int i=0; i<task_prepare_thold; i++) {
+      if(iclose1_prev >= (i+1)) {
+        mymap->taskFlags[iclose1_prev-(i+1)] = 1;
+      }
+      if(iclose1_prev+(i+1) <= (mymap->getFullNumberOfTasks()-1)) {
+        mymap->taskFlags[iclose1_prev+(i+1)] = 1;
+      }
+    }
+    mymap->lockContributors();
+  }
+}
+
 
 }
 }

@@ -47,6 +47,7 @@ private:
   MultiValue mydpack1, mydpack2, mydpack3;
   ReferenceValuePack mypack1, mypack2, mypack3;
   bool first_time;
+  unsigned int task_prepare_thold;
 public:
   static void registerKeywords( Keywords& keys );
   static void reserveKeyword( Keywords& keys );
@@ -55,6 +56,7 @@ public:
   void resize();
   void finish( const std::vector<double>& buffer );
   bool applyForce(std::vector<double>&);
+  void prepare();
 };
 
 }
