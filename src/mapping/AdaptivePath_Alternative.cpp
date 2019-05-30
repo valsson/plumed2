@@ -28,7 +28,7 @@
 #include "core/ActionSet.h"
 #include "core/SetupMolInfo.h"
 
-//+PLUMEDOC COLVAR ADAPTIVE_PATH
+//+PLUMEDOC COLVAR ADAPTIVE_PATH_ALT
 /*
 Compute path collective variables that adapt to the lowest free energy path connecting states A and B.
 
@@ -59,7 +59,7 @@ MD based on the data accumulated during the preceding 50 time steps.
 
 \plumedfile
 d1: DISTANCE ATOMS=1,2 COMPONENTS
-pp: ADAPTIVE_PATH TYPE=EUCLIDEAN FIXED=5,15 UPDATE=50 WFILE=out-path.pdb WSTRIDE=50 REFERENCE=mypath.pdb
+pp: ADAPTIVE_PATH_ALT TYPE=EUCLIDEAN FIXED=5,15 UPDATE=50 WFILE=out-path.pdb WSTRIDE=50 REFERENCE=mypath.pdb
 PRINT ARG=d1.x,d1.y,pp.* FILE=colvar
 \endplumedfile
 
