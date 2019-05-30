@@ -32,7 +32,7 @@ namespace PLMD {
 namespace mapping {
 
 class TrigonometricPathVessel_Alternative : public vesselbase::StoreDataVessel {
-  friend class AdaptivePath;
+  friend class AdaptivePath_Alternative;
 private:
   Value* sp;
   Value* zp;

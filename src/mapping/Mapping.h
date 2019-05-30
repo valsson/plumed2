@@ -47,6 +47,7 @@ class Mapping :
   friend class TrigonometricPathVessel;
   friend class TrigonometricPathVessel_Alternative;
   friend class AdaptivePath;
+  friend class AdaptivePath_Alternative;
 private:
 //  The derivative wrt to the distance from the frame
   std::vector<double> dfframes;
