@@ -239,6 +239,7 @@ void AdaptivePath_Alternative::update() {
     std::vector<std::string> argument_names( getNumberOfArguments() );
     for(unsigned i=0; i<getNumberOfArguments(); ++i) argument_names[i] = getPntrToArgument(i)->getName();
     PDB mypdb; mypdb.setArgumentNames( argument_names );
+    mypdb.setAtomNumbers( getAbsoluteIndexes() );
     for(unsigned i=0; i<myconfs.size(); ++i) {
       pathfile.printf("REMARK TYPE=%s\n", myconfs[i]->getName().c_str() );
       mypdb.setAtomPositions( myconfs[i]->getReferencePositions() );
