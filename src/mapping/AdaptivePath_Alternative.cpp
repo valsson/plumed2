@@ -92,6 +92,7 @@ private:
   std::vector<double> wsum;
   Direction displacement,displacement2;
   std::vector<Direction> pdisplacements;
+  bool normalize_s_values;
 public:
   static void registerKeywords( Keywords& keys );
   explicit AdaptivePath_Alternative(const ActionOptions&);
@@ -113,6 +114,7 @@ void AdaptivePath_Alternative::registerKeywords( Keywords& keys ) {
   keys.add("optional","WFILE","file on which to write out the path");
   keys.add("compulsory","FMT","%f","the format to use for output files");
   keys.add("optional","WSTRIDE","frequency with which to write out the path");
+  keys.addFlag("NONORMALIZATION",false,"Do not normalize the s values of the path.");
 }
 
 AdaptivePath_Alternative::AdaptivePath_Alternative(const ActionOptions& ao):
@@ -120,7 +122,8 @@ AdaptivePath_Alternative::AdaptivePath_Alternative(const ActionOptions& ao):
   Mapping(ao),
   fixedn(2),
   displacement(ReferenceConfigurationOptions("DIRECTION")),
-  displacement2(ReferenceConfigurationOptions("DIRECTION"))
+  displacement2(ReferenceConfigurationOptions("DIRECTION")),
+  normalize_s_values(true)
 {
   setLowMemOption( true ); parseVector("FIXED",fixedn);
   if( fixedn[0]<1 || fixedn[1]>getNumberOfReferencePoints() ) error("fixed nodes must be in range from 0 to number of nodes");
@@ -129,6 +132,12 @@ AdaptivePath_Alternative::AdaptivePath_Alternative(const ActionOptions& ao):
   fixedn[0]--; fixedn[1]--;   // Set fixed notes with c++ indexing starting from zero
   parse("UPDATE",update_str); if( update_str<1 ) error("update frequency for path should be greater than or equal to one");
   log.printf("  updating path every %u MD steps \n",update_str);
+
+  bool do_not_normalize_svalues = false;
+  parseFlag("NONORMALIZATION",do_not_normalize_svalues);
+  if(do_not_normalize_svalues) {
+    normalize_s_values = false;
+  }
 
   double halflife; parse("HALFLIFE",halflife);
   if( halflife<0 ) fadefact=1.0;
@@ -145,10 +154,15 @@ AdaptivePath_Alternative::AdaptivePath_Alternative(const ActionOptions& ao):
   displacement.read( mypdb ); displacement2.read( mypdb );
   for(int i=0; i<getNumberOfReferencePoints(); ++i) {
     addTaskToList( i ); pdisplacements.push_back( Direction(ReferenceConfigurationOptions("DIRECTION")) );
-    property.find("spath")->second[i] = static_cast<double>( i - static_cast<int>(fixedn[0]) ) / static_cast<double>( fixedn[1] - fixedn[0] );
+    if(normalize_s_values) {
+      property.find("spath")->second[i] = static_cast<double>( i - static_cast<int>(fixedn[0]) ) / static_cast<double>( fixedn[1] - fixedn[0] );
+
+    }
     pdisplacements[i].read( mypdb ); wsum.push_back( 0.0 );
   }
-  plumed_assert( getPropertyValue( fixedn[0], "spath" )==0.0 && getPropertyValue( fixedn[1], "spath" )==1.0 );
+  if(normalize_s_values) {
+    plumed_assert( getPropertyValue( fixedn[0], "spath" )==0.0 && getPropertyValue( fixedn[1], "spath" )==1.0 );
+  }
   // And activate them all
   deactivateAllTasks();
   for(unsigned i=0; i<getFullNumberOfTasks(); ++i) taskFlags[i]=1;
