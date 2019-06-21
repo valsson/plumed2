@@ -49,6 +49,7 @@ TrigonometricPathVessel_Alternative::TrigonometricPathVessel_Alternative( const 
   mypack2( 0, 0, mydpack2 ),
   mypack3( 0, 0, mydpack3 ),
   first_time(true),
+  reset_iclose(false),
   task_prepare_thold(0)
 {
   mymap=dynamic_cast<Mapping*>( getAction() );
@@ -112,7 +113,7 @@ void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buf
   double lambda=mymap->getLambda();
   std::vector<double> dist1( getNumberOfComponents() ), dist2( getNumberOfComponents() ), dist3( getNumberOfComponents() );
 
-  if( first_time ) { // check all nodes, find closest
+  if( first_time || reset_iclose ) { // check all nodes, find closest
     retrieveValueWithIndex( 0, false, dist1 ); mindist1 = dist1[0];
     if( lambda>0.0 ) mindist1=-std::log( mindist1 )  / lambda;
     iclose1=getStoreIndex(0);
@@ -178,6 +179,7 @@ void TrigonometricPathVessel_Alternative::finish( const std::vector<double>& buf
 
   iclose1_prev = iclose1;
   first_time = false;
+  reset_iclose = false;
 
   // We now have to compute vectors connecting the three closest points to the
   // new point
@@ -270,14 +272,21 @@ void TrigonometricPathVessel_Alternative::prepare() {
   if(task_prepare_thold>0 && !first_time) {
     // as this will be run before ::finish above
     mymap->deactivateAllTasks();
-    mymap->taskFlags[iclose1_prev] = 1;
-    // fprintf( stderr, "iclose1_prev = %3d\n",iclose1_prev);
-    for(unsigned int i=0; i<task_prepare_thold; i++) {
-      if(iclose1_prev >= (i+1)) {
-        mymap->taskFlags[iclose1_prev-(i+1)] = 1;
+    if(!reset_iclose) {
+      mymap->taskFlags[iclose1_prev] = 1;
+      // fprintf( stderr, "iclose1_prev = %3d\n",iclose1_prev);
+      for(unsigned int i=0; i<task_prepare_thold; i++) {
+        if(iclose1_prev >= (i+1)) {
+          mymap->taskFlags[iclose1_prev-(i+1)] = 1;
+        }
+        if(iclose1_prev+(i+1) <= (mymap->getFullNumberOfTasks()-1)) {
+          mymap->taskFlags[iclose1_prev+(i+1)] = 1;
+        }
       }
-      if(iclose1_prev+(i+1) <= (mymap->getFullNumberOfTasks()-1)) {
-        mymap->taskFlags[iclose1_prev+(i+1)] = 1;
+    }
+    else {
+      for(unsigned int i=0; i<mymap->getFullNumberOfTasks(); i++) {
+        mymap->taskFlags[i] = 1;
       }
     }
     mymap->lockContributors();

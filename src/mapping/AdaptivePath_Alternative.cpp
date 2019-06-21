@@ -242,6 +242,7 @@ void AdaptivePath_Alternative::update() {
     // Now ensure all the nodes of the path are equally spaced
     PathReparameterization myspacings( getPbc(), getArguments(), getAllReferenceConfigurations() );
     myspacings.reparameterize( fixedn[0], fixedn[1], tolerance );
+    mypathv->reset_iclose = true;
   }
   if( (getStep()>0) && (getStep()%wstride==0) ) {
     pathfile<<"# PATH AT STEP "<<getStep();

@@ -47,6 +47,7 @@ private:
   MultiValue mydpack1, mydpack2, mydpack3;
   ReferenceValuePack mypack1, mypack2, mypack3;
   bool first_time;
+  bool reset_iclose;
   unsigned int task_prepare_thold;
 public:
   static void registerKeywords( Keywords& keys );
