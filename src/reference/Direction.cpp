@@ -50,7 +50,7 @@ void Direction::setDirection( const std::vector<Vector>& conf, const std::vector
 void Direction::addDirection( const double& weight, const Direction& dir ) {
   plumed_dbg_assert( dir.getNumberOfReferenceArguments()==getNumberOfReferenceArguments() && dir.reference_atoms.size()==reference_atoms.size() );
   for(unsigned i=0; i<reference_args.size(); ++i) reference_args[i] += weight*dir.reference_args[i];
-  for(unsigned i=0; i<reference_atoms.size(); ++i) reference_atoms[i] += weight*reference_atoms.size()*dir.reference_atoms[i];
+  for(unsigned i=0; i<reference_atoms.size(); ++i) reference_atoms[i] += weight*dir.reference_atoms[i];
 }
 
 void Direction::zeroDirection() {
