@@ -93,6 +93,7 @@ private:
   Direction displacement,displacement2;
   std::vector<Direction> pdisplacements;
   bool normalize_s_values;
+  bool isFirstStep;
 public:
   static void registerKeywords( Keywords& keys );
   explicit AdaptivePath_Alternative(const ActionOptions&);
@@ -123,7 +124,8 @@ AdaptivePath_Alternative::AdaptivePath_Alternative(const ActionOptions& ao):
   fixedn(2),
   displacement(ReferenceConfigurationOptions("DIRECTION")),
   displacement2(ReferenceConfigurationOptions("DIRECTION")),
-  normalize_s_values(true)
+  normalize_s_values(true),
+  isFirstStep(true)
 {
   setLowMemOption( true ); parseVector("FIXED",fixedn);
   if( fixedn[0]<1 || fixedn[1]>getNumberOfReferencePoints() ) error("fixed nodes must be in range from 0 to number of nodes");
@@ -244,7 +246,7 @@ void AdaptivePath_Alternative::update() {
     myspacings.reparameterize( fixedn[0], fixedn[1], tolerance );
     mypathv->reset_iclose = true;
   }
-  if( (getStep()>0) && (getStep()%wstride==0) ) {
+  if( (!isFirstStep) && (getStep()%wstride==0) ) {
     pathfile<<"# PATH AT STEP "<<getStep();
     pathfile.printf(" TIME %f \n",getTime());
     std::vector<std::unique_ptr<ReferenceConfiguration>>& myconfs=getAllReferenceConfigurations();
@@ -262,6 +264,8 @@ void AdaptivePath_Alternative::update() {
       mypdb.print( atoms.getUnits().getLength()/0.1, mymoldat, pathfile, ofmt );
     }
     pathfile.flush();
+  } else {
+    isFirstStep = false;
   }
 }
 
