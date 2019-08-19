@@ -418,13 +418,13 @@ private:
   std::string targetfilename_;
   std::unique_ptr<Grid> TargetGrid_;
   double kbt_;
-  int stride_;
+  long int stride_;
   bool welltemp_;
   //
-  int current_stride;
+  long int current_stride;
   bool freq_adaptive_;
   int fa_update_frequency_;
-  int fa_max_stride_;
+  long int fa_max_stride_;
   double fa_min_acceleration_;
   //
   std::unique_ptr<double[]> dp_;
@@ -2005,7 +2005,7 @@ void MetaD::updateFrequencyAdaptiveStride() {
   plumed_massert(freq_adaptive_,"should only be used if frequency adaptive metadynamics is enabled");
   plumed_massert(acceleration,"frequency adaptive metadynamics can only be used if the acceleration factor is calculated");
   const double mean_acc = acc/((double) getStep());
-  int tmp_stride= stride_*floor((mean_acc/fa_min_acceleration_)+0.5);
+  long int tmp_stride= stride_*floor((mean_acc/fa_min_acceleration_)+0.5);
   if(mean_acc >= fa_min_acceleration_) {
     if(tmp_stride > current_stride) {current_stride = tmp_stride;}
   }
