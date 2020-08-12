@@ -437,7 +437,7 @@ private:
   unsigned mpi_mw_;
   bool flying;
   bool acceleration;
-  double acc;
+  double acc_mean;
   double acc_restart_mean_;
   bool calc_max_bias_;
   double max_bias_;
@@ -577,7 +577,7 @@ MetaD::MetaD(const ActionOptions& ao):
   walkers_mpi(false), mpi_nw_(0), mpi_mw_(0),
 // Flying Gaussian
   flying(false),
-  acceleration(false), acc(0.0), acc_restart_mean_(0.0),
+  acceleration(false), acc_mean(1.0), acc_restart_mean_(0.0),
   calc_max_bias_(false), max_bias_(0.0),
   calc_transition_bias_(false), transition_bias_(0.0),
 // Interval initialization
@@ -984,7 +984,7 @@ MetaD::MetaD(const ActionOptions& ao):
     // Set the initial value of the the acceleration.
     // If this is not a restart, set to 1.0.
     if (acc_rfilename.length() == 0) {
-      getPntrToComponent("acc")->set(1.0);
+      getPntrToComponent("acc")->set(acc_mean);
       if(getRestart()) {
         log.printf("  WARNING: calculating the acceleration factor in a restarted run without reading in the previous value will most likely lead to incorrect results. You should use the ACCELERATION_RFILE keyword.\n");
       }
@@ -1686,11 +1686,11 @@ void MetaD::calculate()
   if(calc_rct_) getPntrToComponent("rbias")->set(ene - reweight_factor_);
   // calculate the acceleration factor
   if(acceleration&&!isFirstStep) {
-    acc += static_cast<double>(getStride()) * exp(ene/(kbt_));
-    const double mean_acc = acc/((double) getStep());
-    getPntrToComponent("acc")->set(mean_acc);
+    const double exp_bias = static_cast<double>(getStride()) * exp(ene/(kbt_));
+    acc_mean += (exp_bias-acc_mean)/(static_cast<double>(getStep())+1.0);
+    getPntrToComponent("acc")->set(acc_mean);
   } else if (acceleration && isFirstStep && acc_restart_mean_ > 0.0) {
-    acc = acc_restart_mean_ * static_cast<double>(getStep());
+    acc_mean = acc_restart_mean_;
     if(freq_adaptive_) {
       // has to be done here if restarting, as the acc is not defined before
       updateFrequencyAdaptiveStride();
@@ -2001,9 +2001,8 @@ double MetaD::getTransitionBarrierBias() {
 void MetaD::updateFrequencyAdaptiveStride() {
   plumed_massert(freq_adaptive_,"should only be used if frequency adaptive metadynamics is enabled");
   plumed_massert(acceleration,"frequency adaptive metadynamics can only be used if the acceleration factor is calculated");
-  const double mean_acc = acc/((double) getStep());
-  int tmp_stride= stride_*floor((mean_acc/fa_min_acceleration_)+0.5);
-  if(mean_acc >= fa_min_acceleration_) {
+  int tmp_stride= stride_*floor((acc_mean/fa_min_acceleration_)+0.5);
+  if(acc_mean >= fa_min_acceleration_) {
     if(tmp_stride > current_stride) {current_stride = tmp_stride;}
   }
   if(fa_max_stride_!=0 && current_stride>fa_max_stride_) {
